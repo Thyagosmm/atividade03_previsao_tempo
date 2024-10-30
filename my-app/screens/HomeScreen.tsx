@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Image, ScrollView } from 'react-native';
 import axios from 'axios';
 
 // Definindo o tipo para os dados meteorológicos
@@ -12,6 +12,14 @@ type WeatherData = {
   sunrise: string;
   sunset: string;
   condition_slug: string;
+  forecast: {
+    date: string;
+    weekday: string;
+    max: number;
+    min: number;
+    description: string;
+    condition: string;
+  }[];
 };
 
 const HomeScreen: React.FC = () => {
@@ -22,10 +30,11 @@ const HomeScreen: React.FC = () => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
+        const city = 'Recife';
         const response = await axios.get(`https://cors-anywhere.herokuapp.com/https://api.hgbrasil.com/weather`, {
           params: {
             key: API_KEY,
-            user_ip: 'remote',
+            city_name: city,
           },
         });
         setWeatherData(response.data.results);
@@ -56,27 +65,46 @@ const HomeScreen: React.FC = () => {
     );
   }
 
-  const { city, temp, description, humidity, wind_speedy, sunrise, sunset, condition_slug } = weatherData;
+  const { city, temp, description, humidity, wind_speedy, forecast } = weatherData;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
         <Text style={styles.city}>{city}</Text>
-        <Text style={styles.temperature}>{temp}°C</Text>
         <Image
           style={styles.icon}
-          source={{ uri: `https://assets.hgbrasil.com/weather/icons/conditions/${condition_slug}.svg` }}
+          source={{ uri: `https://assets.hgbrasil.com/weather/icons/conditions/${weatherData.condition_slug}.svg` }}
         />
+        <Text style={styles.temperature}>{temp}°</Text>
         <Text style={styles.description}>{description}</Text>
-        
-        <View style={styles.details}>
-          <Text>Umidade: {humidity}%</Text>
-          <Text>Vento: {wind_speedy}</Text>
-          <Text>Amanhecer: {sunrise}</Text>
-          <Text>Pôr do Sol: {sunset}</Text>
+        <Text style={styles.minMax}>Max: {forecast[0].max}° Min: {forecast[0].min}°</Text>
+      </View>
+      
+      <View style={styles.statsContainer}>
+        <View style={styles.stat}>
+          <Text style={styles.statText}>{humidity}%</Text>
+          <Text style={styles.statLabel}>Umidade</Text>
+        </View>
+        <View style={styles.stat}>
+          <Text style={styles.statText}>{wind_speedy}</Text>
+          <Text style={styles.statLabel}>Vento</Text>
         </View>
       </View>
-    </View>
+
+      <View style={styles.forecastContainer}>
+        <Text style={styles.forecastTitle}>Próximos dias</Text>
+        {forecast.slice(1, 6).map((day, index) => (
+          <View key={index} style={styles.forecastItem}>
+            <Text style={styles.forecastDay}>{day.weekday}</Text>
+            <Image
+              style={styles.forecastIcon}
+              source={{ uri: `https://assets.hgbrasil.com/weather/icons/conditions/${day.condition}.svg` }}
+            />
+            <Text style={styles.forecastTemp}>{day.max}° / {day.min}°</Text>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
@@ -85,45 +113,90 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 10,
+    backgroundColor: '#1E2A78',
+    paddingHorizontal: 20,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 20,
+  header: {
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    paddingVertical: 20,
   },
   city: {
-    fontSize: 22,
+    fontSize: 24,
+    color: '#fff',
     fontWeight: 'bold',
   },
   temperature: {
-    fontSize: 48,
+    fontSize: 80,
+    color: '#fff',
     fontWeight: 'bold',
-    color: '#ff8c00',
+    marginVertical: 10,
+  },
+  description: {
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 5,
+  },
+  minMax: {
+    fontSize: 16,
+    color: '#ddd',
   },
   icon: {
     width: 100,
     height: 100,
     marginVertical: 10,
   },
-  description: {
-    fontSize: 18,
-    color: '#555',
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#2E3B9F',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 20,
   },
-  details: {
-    marginTop: 15,
+  stat: {
     alignItems: 'center',
+  },
+  statText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#aaa',
+  },
+  forecastContainer: {
+    marginVertical: 20,
+  },
+  forecastTitle: {
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 10,
+  },
+  forecastItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: '#2E3B9F',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  forecastDay: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  forecastIcon: {
+    width: 40,
+    height: 40,
+  },
+  forecastTemp: {
+    fontSize: 16,
+    color: '#fff',
   },
 });
