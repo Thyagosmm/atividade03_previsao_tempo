@@ -204,7 +204,7 @@ const HomeScreen: React.FC = () => {
               <Text style={styles.minMax}>Max: {forecast[0].max}° Min: {forecast[0].min}°</Text>
             </View>
 
-            <View style={styles.statsContainer}>
+            <View style={[styles.statsContainer, theme === 'light' ? styles.containerLight : styles.containerDark]}>
               <View style={styles.stat}>
                 <Text style={styles.statText}>{humidity}%</Text>
                 <Text style={styles.statLabel}>Umidade</Text>
@@ -219,7 +219,7 @@ const HomeScreen: React.FC = () => {
               </View>
             </View>
 
-            <View style={styles.todayContainer}>
+            <View style={[styles.todayContainer, theme === 'light' ? styles.containerLight : styles.containerDark]}>
               <View style={styles.todayHeader}>
                 <Text style={styles.todayTitle}>Hoje</Text>
                 <Text style={styles.todayDate}>{`${month}, ${day}`}</Text>
@@ -245,7 +245,7 @@ const HomeScreen: React.FC = () => {
             <View style={styles.forecastContainer}>
               <Text style={styles.forecastTitle}>Próximos dias</Text>
               {forecast.slice(1, 8).map((day, index) => (
-                <View key={index} style={styles.forecastItem}>
+                <View key={index} style={[styles.forecastItem, theme === 'light' ? styles.containerLight : styles.containerDark]}>
                   <Text style={styles.forecastDay}>{day.weekday}</Text>
                   <SvgUri
                     width="40"
@@ -276,6 +276,12 @@ const styles = StyleSheet.create({
   },
   darkTheme: {
     backgroundColor: '#1E2A78', // Fundo azul escuro para o tema noturno
+  },
+  containerLight:{
+    backgroundColor:'#6ca6a3',
+  },
+  containerDark:{
+    backgroundColor:'#2E3B9F'
   },
   center: {
     flex: 1,
@@ -347,7 +353,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 14,
-    color: '#aaa',
+    color: '#fff',
   },
   todayContainer: {
     backgroundColor: '#2E3B9F',
